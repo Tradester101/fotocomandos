@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fotocomandos</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --paper:#eef0ed;
+    --surface:#ffffff;
+    --surface-2:#f5f6f3;
+    --ink:#171614;
+    --ink-soft:#5c5952;
+    --ink-faint:#8b8880;
+    --line:#dcdcd6;
+    --line-strong:#c6c6bf;
+    --accent:#d84226;
+    --accent-ink:#ffffff;
+    --accent-2:#2f8f83;
+    --accent-3:#a8701c;
+    --focus:#d84226;
+    --shadow: 0 1px 2px rgba(23,22,20,.04), 0 8px 24px -12px rgba(23,22,20,.18);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#121412;
+      --surface:#1b1d19;
+      --surface-2:#202320;
+      --ink:#f2efe8;
+      --ink-soft:#b3aea3;
+      --ink-faint:#807b71;
+      --line:#33362f;
+      --line-strong:#454840;
+      --accent:#ff6a48;
+      --accent-ink:#171614;
+      --accent-2:#57c2b2;
+      --accent-3:#e3a94a;
+      --focus:#ff6a48;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 32px -14px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#121412;
+    --surface:#1b1d19;
+    --surface-2:#202320;
+    --ink:#f2efe8;
+    --ink-soft:#b3aea3;
+    --ink-faint:#807b71;
+    --line:#33362f;
+    --line-strong:#454840;
+    --accent:#ff6a48;
+    --accent-ink:#171614;
+    --accent-2:#57c2b2;
+    --accent-3:#e3a94a;
+    --focus:#ff6a48;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 32px -14px rgba(0,0,0,.6);
+  }
+
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Archivo",ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;
+    padding:0 16px;
+    padding-block:28px 64px;
+  }
+  @media (min-width:640px){ body{ padding-inline:32px; } }
+
+  .wrap{ max-width:1180px; margin:0 auto; }
+
+  code,.mono{ font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace; }
+
+  header.top{
+    display:flex; flex-direction:column; gap:10px;
+    padding-bottom:22px; margin-bottom:22px;
+    border-bottom:1px solid var(--line);
+  }
+  .eyebrow{
+    display:flex; align-items:center; gap:8px;
+    font-family:"JetBrains Mono",monospace;
+    font-size:.72rem; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+  .eyebrow .dot{ width:6px;height:6px;border-radius:50%;background:var(--accent); }
+  h1{
+    margin:0; font-weight:800; letter-spacing:-.02em;
+    font-size:clamp(1.7rem,4vw,2.35rem);
+    text-wrap:balance;
+  }
+  header.top p{
+    margin:0; max-width:62ch; color:var(--ink-soft);
+    font-size:.98rem; line-height:1.55;
+  }
+  .stat-row{ display:flex; flex-wrap:wrap; gap:18px; margin-top:4px; }
+  .stat{ font-family:"JetBrains Mono",monospace; font-size:.78rem; color:var(--ink-faint); }
+  .stat b{ color:var(--ink); font-weight:700; }
+
+  .board{
+    display:grid;
+    grid-template-columns:1fr;
+    grid-template-areas:"subject" "controls" "grid" "result";
+    gap:20px;
+    align-items:start;
+  }
+  @media (min-width:900px){
+    .board{
+      grid-template-columns:1.55fr 1fr;
+      grid-template-areas:
+        "subject subject"
+        "controls result"
+        "grid result";
+      gap:22px 28px;
+    }
+  }
+
+  .panel{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:14px;
+    box-shadow:var(--shadow);
+    padding:18px 18px 20px;
+  }
+  .panel h2{
+    margin:0 0 3px; font-size:.72rem; font-weight:700;
+    letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint);
+  }
+  .panel .panel-sub{ margin:0 0 14px; font-size:.86rem; color:var(--ink-soft); }
+
+  .subject{ grid-area:subject; }
+  .field-row{ display:grid; gap:14px; grid-template-columns:1fr; }
+  @media (min-width:640px){ .field-row{ grid-template-columns:1.1fr .9fr; } }
+  label.field-label{
+    display:block; font-size:.76rem; font-weight:600; color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  input[type="text"], textarea{
+    width:100%; font:inherit; font-size:.92rem; color:var(--ink);
+    background:var(--surface-2); border:1px solid var(--line-strong);
+    border-radius:9px; padding:10px 12px; resize:vertical;
+    font-family:"Archivo",sans-serif;
+  }
+  textarea{ min-height:44px; line-height:1.4; }
+  input[type="text"]:focus, textarea:focus, .cmd-search input:focus{
+    outline:2px solid var(--focus); outline-offset:1px; border-color:transparent;
+  }
+
+  .controls{ grid-area:controls; padding-bottom:14px; }
+  .cmd-search{
+    position:relative; display:flex; align-items:center; gap:8px;
+    background:var(--surface-2); border:1px solid var(--line-strong);
+    border-radius:10px; padding:9px 12px; margin-bottom:14px;
+  }
+  .cmd-search .slash{
+    font-family:"JetBrains Mono",monospace; font-weight:700; color:var(--accent);
+    font-size:1rem;
+  }
+  .cmd-search input{
+    all:unset; flex:1; font-family:"JetBrains Mono",monospace; font-size:.88rem; color:var(--ink);
+  }
+  .cmd-search input::placeholder{ color:var(--ink-faint); }
+  .cmd-search .kbd{
+    font-family:"JetBrains Mono",monospace; font-size:.68rem; color:var(--ink-faint);
+    border:1px solid var(--line-strong); border-radius:5px; padding:1px 6px;
+  }
+
+  .pills{ display:flex; flex-wrap:wrap; gap:8px; }
+  .pill{
+    font-family:"JetBrains Mono",monospace; font-size:.76rem; font-weight:600;
+    padding:6px 12px; border-radius:999px; border:1px solid var(--line-strong);
+    background:var(--surface-2); color:var(--ink-soft); cursor:pointer;
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .pill .dot{ width:7px;height:7px;border-radius:50%; }
+  .pill[aria-pressed="true"]{
+    background:var(--ink); color:var(--paper); border-color:var(--ink);
+  }
+  .pill[aria-pressed="true"] .dot{ background:var(--paper); }
+  .pill:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
+
+  .grid-wrap{ grid-area:grid; }
+  .count-line{
+    font-family:"JetBrains Mono",monospace; font-size:.74rem; color:var(--ink-faint);
+    margin:0 2px 10px;
+  }
+  .cmd-grid{
+    display:grid; gap:10px;
+    grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
+  }
+  .cmd-card{
+    text-align:left; cursor:pointer;
+    background:var(--surface); border:1px solid var(--line); border-radius:11px;
+    padding:12px 13px 13px; display:flex; flex-direction:column; gap:6px;
+    transition:transform .12s ease, border-color .12s ease, background .12s ease;
+  }
+  .cmd-card:hover{ border-color:var(--line-strong); transform:translateY(-1px); }
+  .cmd-card:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
+  .cmd-card[aria-pressed="true"]{
+    border-color:var(--accent); background:var(--surface-2);
+    box-shadow:inset 3px 0 0 var(--accent);
+  }
+  .cmd-card .trig{
+    font-family:"JetBrains Mono",monospace; font-weight:700; font-size:.86rem; color:var(--accent);
+  }
+  .cmd-card .title{ font-weight:600; font-size:.88rem; line-height:1.3; }
+  .cmd-card .desc{ font-size:.78rem; color:var(--ink-soft); line-height:1.4; }
+  .cmd-card .tag{
+    align-self:flex-start; margin-top:2px;
+    font-family:"JetBrains Mono",monospace; font-size:.66rem; letter-spacing:.04em;
+    text-transform:uppercase; color:var(--ink-faint);
+    display:inline-flex; align-items:center; gap:5px;
+  }
+  .cmd-card .tag .dot{ width:6px;height:6px;border-radius:50%; }
+  .empty-state{
+    padding:32px 12px; text-align:center; color:var(--ink-faint);
+    font-size:.88rem; border:1px dashed var(--line-strong); border-radius:11px;
+  }
+
+  .result{ grid-area:result; position:sticky; top:16px; }
+  .result .sel-trig{
+    font-family:"JetBrains Mono",monospace; font-weight:700; color:var(--accent); font-size:1rem;
+  }
+  .result .sel-title{ font-weight:700; font-size:1.02rem; margin:2px 0 12px; }
+  .prompt-box{
+    background:var(--surface-2); border:1px solid var(--line);
+    border-radius:10px; padding:12px 13px; font-family:"JetBrains Mono",monospace;
+    font-size:.82rem; line-height:1.55; color:var(--ink); white-space:pre-wrap;
+    max-height:280px; overflow-y:auto;
+  }
+  .copy-row{ display:flex; align-items:center; gap:10px; margin-top:12px; }
+  button.copy-btn{
+    font:inherit; font-family:"Archivo",sans-serif; font-weight:700; font-size:.86rem;
+    background:var(--accent); color:var(--accent-ink); border:none;
+    border-radius:9px; padding:10px 16px; cursor:pointer;
+  }
+  button.copy-btn:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  button.copy-btn[data-copied="true"]{ background:var(--accent-2); }
+  .copy-hint{ font-size:.76rem; color:var(--ink-faint); }
+  .usage-note{
+    margin-top:16px; padding-top:14px; border-top:1px solid var(--line);
+    font-size:.78rem; color:var(--ink-faint); line-height:1.5;
+  }
+
+  footer.legal{
+    margin-top:34px; padding-top:16px; border-top:1px solid var(--line);
+    font-size:.78rem; color:var(--ink-faint); line-height:1.6; max-width:72ch;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition:none !important; animation:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow"><span class="dot"></span> sistema de comandos para fotos con IA</div>
+    <h1>Fotocomandos</h1>
+    <p>Un cuaderno de comandos tipo "/" que no ejecuta nada por sí solo, pero convierte cada idea en un prompt completo. Describe tu foto una vez, elige un comando y copia el resultado en el editor o generador de imágenes con IA que uses.</p>
+    <div class="stat-row">
+      <div class="stat"><b id="stat-total">86</b> comandos</div>
+      <div class="stat"><b>3</b> rollos · producto, retratos, edición</div>
+    </div>
+  </header>
+
+  <div class="board">
+    <section class="panel subject">
+      <h2>1 · Tu foto</h2>
+      <p class="panel-sub">Descríbela una vez; se reutiliza en cualquier comando que elijas abajo.</p>
+      <div class="field-row">
+        <div>
+          <label class="field-label" for="in-sujeto">Sujeto (qué o quién aparece en la foto)</label>
+          <input type="text" id="in-sujeto" placeholder="p. ej. unas zapatillas deportivas blancas con detalles dorados">
+        </div>
+        <div>
+          <label class="field-label" for="in-detalle">Detalles extra (opcional)</label>
+          <textarea id="in-detalle" placeholder="p. ej. mantener el logo visible, tono de marca azul marino"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <section class="controls">
+      <h2 style="margin-bottom:10px">2 · Elige un comando</h2>
+      <div class="cmd-search">
+        <span class="slash">/</span>
+        <input type="text" id="in-search" placeholder="Escribe para buscar (ej. neon, retrato, fondo)…" autocomplete="off">
+        <span class="kbd">/</span>
+      </div>
+      <div class="pills" id="pills" role="group" aria-label="Filtrar por rollo"></div>
+    </section>
+
+    <section class="grid-wrap">
+      <p class="count-line" id="count-line"></p>
+      <div class="cmd-grid" id="cmd-grid"></div>
+    </section>
+
+    <aside class="panel result">
+      <h2>3 · Prompt listo</h2>
+      <div class="sel-trig" id="sel-trig">/showcase</div>
+      <div class="sel-title" id="sel-title">Fotografía publicitaria premium</div>
+      <div class="prompt-box mono" id="prompt-box"></div>
+      <div class="copy-row">
+        <button class="copy-btn" id="copy-btn" type="button">Copiar prompt</button>
+        <span class="copy-hint" id="copy-hint"></span>
+      </div>
+      <p class="usage-note">Pega este texto junto a tu foto en la herramienta de edición o generación de imágenes con IA que uses. No es un comando reconocido por ningún chatbot — es una plantilla de prompt lista para reutilizar.</p>
+    </aside>
+  </div>
+
+  <footer class="legal">
+    Fotocomandos es una referencia de prompts, no una integración oficial de ninguna plataforma de IA. Los resultados dependen por completo de la herramienta de generación o edición de imágenes que utilices para pegarlos.
+  </footer>
+</div>
+
+<script>
+(function(){
+  // [id, category, trigger, title, shortDesc, template]
+  var DATA = [
+    ['showcase','producto','/showcase','Fotografía publicitaria premium','Iluminación cinematográfica y reflejos de estudio.','Transforma {sujeto} en una fotografía publicitaria premium, con iluminación cinematográfica, reflejos sutiles y un escenario sofisticado que resalte sus formas y materiales.'],
+    ['metaad','producto','/metaad','Anuncio para Meta Ads','Composición llamativa con espacio para copy.','Crea un anuncio visual para Meta Ads con {sujeto} como protagonista absoluto, composición llamativa y espacio limpio en la parte superior para agregar texto publicitario.'],
+    ['3dbillboard','producto','/3dbillboard','Valla publicitaria 3D anamórfica','Escenario urbano, perspectiva forzada.','Coloca {sujeto} dentro de una gigantesca valla publicitaria 3D anamórfica en un cruce urbano nocturno, con la perspectiva forzada característica de estos anuncios.'],
+    ['productshot','producto','/productshot','Fotografía de estudio','Fondo limpio, foco total en el producto.','Crea una fotografía profesional de estudio de {sujeto}, con fondo limpio neutro, enfoque total en el producto y sombra suave y controlada.'],
+    ['luxury','producto','/luxury','Campaña de lujo','Acabados sofisticados, estética premium.','Transforma {sujeto} en una campaña de lujo con acabados sofisticados, materiales premium y una estética inspirada en grandes marcas de moda.'],
+    ['cinematic','producto','/cinematic','Escena cinematográfica','Luz volumétrica y atmósfera de película.','Crea una escena cinematográfica dramática alrededor de {sujeto}, con luz volumétrica, profundidad de campo y atmósfera de película.'],
+    ['macro','producto','/macro','Primer plano macro','Texturas y detalles extremos.','Genera un primer plano extremadamente detallado de {sujeto}, mostrando texturas, materiales y pequeños detalles con nitidez de lente macro.'],
+    ['floating','producto','/floating','Producto levitando','Partículas y elementos de marca flotando.','Haz que {sujeto} levite en el aire, rodeado de partículas suaves y elementos relacionados con la marca, con iluminación de estudio.'],
+    ['splash','producto','/splash','Impacto de líquido','Explosión de agua congelada en el aire.','Muestra {sujeto} siendo impactado o rodeado por una explosión de agua congelada en el aire, con gotas nítidas en movimiento.'],
+    ['ice','producto','/ice','Escenario congelado','Hielo, niebla fría y condensación.','Coloca {sujeto} en un escenario congelado con hielo, cristales, niebla fría y gotas de condensación en la superficie.'],
+    ['fire','producto','/fire','Rodeado de fuego','Brasas, chispas y luz cálida dramática.','Rodea {sujeto} de fuego, brasas y chispas, con iluminación cálida y dramática que resalte el contraste con las sombras.'],
+    ['energy','producto','/energy','Aura de energía','Rayos y partículas eléctricas.','Añade rayos de electricidad, partículas energéticas y un aura intensa alrededor de {sujeto}, con tonos eléctricos saturados.'],
+    ['neon','producto','/neon','Escenario neón','Atmósfera cyberpunk nocturna.','Crea un escenario futurista iluminado con luces de neón y reflejos alrededor de {sujeto}, con atmósfera cyberpunk nocturna.'],
+    ['cyberpunk','producto','/cyberpunk','Campaña cyberpunk','Ciudad futurista, neón y lluvia.','Transforma la escena en una campaña futurista inspirada en ciudades cyberpunk, con {sujeto} como elemento central entre luces de neón y lluvia.'],
+    ['futuristic','producto','/futuristic','Entorno tecnológico','Superficies limpias y luz fría.','Coloca {sujeto} en un entorno tecnológico avanzado, minimalista y futurista, con superficies limpias y luz fría.'],
+    ['hologram','producto','/hologram','Hologramas e interfaces','Elementos HUD con brillo azul/cian.','Rodea {sujeto} con hologramas, interfaces digitales flotantes y elementos HUD con brillo azul y cian.'],
+    ['portal','producto','/portal','Portal de energía','Bordes luminosos y distorsión sutil.','Muestra {sujeto} emergiendo a través de un portal de energía cinematográfico, con bordes luminosos y distorsión sutil.'],
+    ['explosion','producto','/explosion','Explosión controlada','Partículas y fragmentos suspendidos.','Coloca {sujeto} en el centro de una explosión visual controlada, con partículas y fragmentos suspendidos en el aire.'],
+    ['smoke','producto','/smoke','Humo volumétrico','Haces de luz atravesando el humo.','Crea humo volumétrico y dramático alrededor de {sujeto}, atravesado por haces de luz direccional.'],
+    ['storm','producto','/storm','Tormenta épica','Rayos, lluvia y atmósfera oscura.','Coloca {sujeto} en medio de una tormenta con rayos, lluvia y una atmósfera épica y oscura.'],
+    ['underwater','producto','/underwater','Bajo el agua','Burbujas y luz refractada.','Sumerge {sujeto} bajo el agua con burbujas ascendiendo, luz refractada desde la superficie y una sensación visual premium.'],
+    ['ocean','producto','/ocean','Escena oceánica','Olas y agua en movimiento.','Integra {sujeto} en una gran escena oceánica con olas y agua en movimiento alrededor.'],
+    ['desert','producto','/desert','Escenario desértico','Arena, polvo y luz rasante.','Coloca {sujeto} en un escenario desértico cinematográfico, con arena, polvo suspendido y luz solar intensa y rasante.'],
+    ['nature','producto','/nature','Integración orgánica','Bosque, piedras y luz filtrada.','Integra {sujeto} de forma orgánica en un entorno de bosque, con plantas, piedras y luz filtrada entre las hojas.'],
+    ['jungle','producto','/jungle','Selva tropical','Atmósfera húmeda y follaje denso.','Coloca {sujeto} dentro de una exuberante selva tropical, con atmósfera húmeda y luz cinematográfica entre el follaje.'],
+    ['space','producto','/space','En el espacio','Estrellas, planetas y nebulosa.','Sitúa {sujeto} en el espacio, rodeado de estrellas, planetas distantes y una nebulosa de colores.'],
+    ['moon','producto','/moon','Superficie lunar','Campaña surrealista con la Tierra al fondo.','Coloca {sujeto} sobre la superficie de la Luna, con el planeta Tierra visible al fondo, en una campaña surrealista.'],
+    ['mars','producto','/mars','Escenario marciano','Terreno rojizo, cielo de otro planeta.','Sitúa {sujeto} en la superficie de Marte, con terreno rojizo y un cielo cinematográfico de otro planeta.'],
+    ['gravity','producto','/gravity','Composición ingrávida','Objetos flotando, gravedad desafiada.','Crea una composición surrealista con objetos y elementos flotando alrededor de {sujeto}, desafiando la gravedad.'],
+    ['giant','producto','/giant','Producto gigante','Escala urbana real de fondo.','Transforma {sujeto} en una versión gigantesca integrada dentro de una ciudad real, con gente y edificios alrededor para dar escala.'],
+    ['miniature','producto','/miniature','Escala miniatura','Personas diminutas interactuando.','Crea pequeñas personas interactuando con {sujeto} como si este fuera gigantesco, con perspectiva forzada realista.'],
+    ['street','producto','/street','Campaña urbana','Calles, edificios y estética lifestyle.','Integra {sujeto} en una campaña urbana moderna con calles, edificios y estética lifestyle cotidiana.'],
+    ['timesquare','producto','/timesquare','Pantallas gigantes','Anuncios nocturnos entre multitud.','Coloca {sujeto} en enormes pantallas publicitarias nocturnas inspiradas en Times Square, entre luces y multitud.'],
+    ['tokyo','producto','/tokyo','Neón de Tokio','Carteles verticales y luces nocturnas.','Crea una campaña urbana futurista inspirada en Tokio de noche, con {sujeto} entre luces de neón y carteles verticales.'],
+    ['dubai','producto','/dubai','Lujo en Dubái','Arquitectura moderna al fondo.','Coloca {sujeto} en un entorno lujoso y futurista inspirado en Dubái, con arquitectura moderna al fondo.'],
+    ['storefront','producto','/storefront','Tienda física premium','Fachada y escaparate conceptual.','Transforma la marca de {sujeto} en una fachada de tienda física premium, con escaparate conceptual iluminado.'],
+    ['popupstore','producto','/popupstore','Tienda pop-up','Espacio temático con la identidad de marca.','Crea una tienda pop-up temática basada en la identidad visual de {sujeto}, con elementos de marca integrados en el espacio.'],
+    ['packaging','producto','/packaging','Mockup de empaque','Empaque en escenario publicitario.','Crea un mockup profesional del empaque de {sujeto} dentro de un escenario publicitario con iluminación de producto.'],
+    ['launch','producto','/launch','Lanzamiento de producto','Pedestal y atmósfera de revelación.','Crea un visual de lanzamiento para {sujeto}, con iluminación dramática, pedestal y atmósfera de revelación de escenario.'],
+    ['pedestal','producto','/pedestal','Sobre pedestal','Escenario minimalista, luz cenital.','Coloca {sujeto} centrado sobre un pedestal premium, dentro de un escenario minimalista con luz cenital.'],
+    ['minimal','producto','/minimal','Campaña minimalista','Espacio negativo generoso.','Crea una campaña extremadamente limpia, elegante y minimalista alrededor de {sujeto}, con espacio negativo generoso.'],
+    ['gradient','producto','/gradient','Fondo degradado','A tono con la identidad visual.','Coloca {sujeto} sobre un fondo degradado moderno que combine con los colores de su identidad visual.'],
+    ['studio','producto','/studio','Comercial de estudio','Iluminación de tres puntos.','Crea una fotografía comercial realista de {sujeto}, realizada en un estudio profesional con iluminación de tres puntos.'],
+    ['ecommerce','producto','/ecommerce','Foto para catálogo','Fondo blanco, lista para tienda online.','Presenta {sujeto} aislado sobre fondo blanco, perfectamente iluminado y preparado para catálogo o comercio electrónico.'],
+    ['instagram','producto','/instagram','Feed de Instagram','Formato cuadrado optimizado.','Crea una composición publicitaria con {sujeto}, optimizada visualmente en formato cuadrado para el feed de Instagram.'],
+    ['reelscover','producto','/reelscover','Portada de Reels','Vertical 9:16, foco central.','Transforma la imagen de {sujeto} en una portada vertical impactante para Reels, formato 9:16 con foco central.'],
+    ['storyad','producto','/storyad','Anuncio de Stories','9:16 con espacio para sticker.','Crea un anuncio vertical de {sujeto} en formato 9:16 optimizado para Instagram Stories, con espacio para el sticker de deslizar.'],
+    ['ugc','producto','/ugc','Estilo UGC','Look natural, no artificial.','Integra {sujeto} en una fotografía natural y espontánea, con la estética de contenido generado por usuarios (UGC), sin verse artificial.'],
+    ['viral','producto','/viral','Imagen viral','Exagerada, hecha para detener el scroll.','Crea una imagen de {sujeto} intencionalmente exagerada y sorprendente, diseñada para captar la atención al instante en redes sociales.'],
+    ['hero','producto','/hero','Hero de campaña','La imagen principal definitiva.','Crea la imagen principal definitiva de campaña con {sujeto} como protagonista absoluto, acabado publicitario premium y composición equilibrada.'],
+
+    ['headshot','retrato','/headshot','Retrato profesional','Fondo neutro, estilo LinkedIn.','Convierte esta foto en un retrato profesional tipo LinkedIn de {sujeto}, con fondo neutro desenfocado e iluminación de estudio favorecedora.'],
+    ['retoque','retrato','/retoque','Retoque de piel natural','Sin exagerar, textura real.','Retoca suavemente la piel de {sujeto} manteniendo la textura natural, sin exagerar ni perder realismo.'],
+    ['byn','retrato','/byn','Blanco y negro dramático','Alto contraste, sombras marcadas.','Convierte esta foto de {sujeto} en un blanco y negro dramático, con alto contraste y sombras marcadas.'],
+    ['fondoretrato','retrato','/fondoretrato','Cambiar fondo del retrato','Iluminación coherente con el nuevo fondo.','Cambia el fondo de esta foto de {sujeto} por uno nuevo, manteniendo la iluminación coherente entre el sujeto y el fondo.'],
+    ['vestuario','retrato','/vestuario','Cambiar vestimenta','Misma pose y expresión.','Cambia la vestimenta de {sujeto} manteniendo su pose, expresión y proporciones exactamente iguales.'],
+    ['restaurarfoto','retrato','/restaurarfoto','Restaurar foto antigua','Sin alterar los rasgos originales.','Restaura esta foto antigua de {sujeto}, corrigiendo rasgaduras, manchas y pérdida de nitidez, sin alterar los rasgos originales.'],
+    ['colorizarretrato','retrato','/colorizarretrato','Colorizar retrato','Tonos de piel y ropa realistas.','Colorea esta foto en blanco y negro de {sujeto} con tonos de piel y ropa realistas y naturales.'],
+    ['iluminacionretrato','retrato','/iluminacionretrato','Cambiar iluminación','Esquema tipo Rembrandt.','Cambia la iluminación de este retrato de {sujeto} a un esquema tipo Rembrandt, con una fuente principal lateral y sombra suave.'],
+    ['bokeh','retrato','/bokeh','Fondo desenfocado','Bokeh de retrato profesional.','Aplica un desenfoque de fondo tipo retrato profesional (bokeh) detrás de {sujeto}, manteniendo el sujeto perfectamente nítido.'],
+    ['pasaporte','retrato','/pasaporte','Foto tipo documento','Fondo neutro, encuadre reglamentario.','Convierte esta foto de {sujeto} en una foto tipo carnet o pasaporte, con fondo neutro liso y encuadre frontal reglamentario.'],
+    ['editorial','retrato','/editorial','Retrato editorial','Iluminación y composición de revista.','Transforma esta foto de {sujeto} en un retrato editorial de revista, con iluminación de autor y composición sofisticada.'],
+    ['glamour','retrato','/glamour','Retrato glamour','Brillo suave, contraste elegante.','Aplica una iluminación glamorosa de estudio sobre {sujeto}, con brillo suave en la piel y contraste elegante.'],
+    ['urbanoretrato','retrato','/urbanoretrato','Retrato urbano','Ciudad nocturna desenfocada al fondo.','Coloca a {sujeto} en un escenario urbano callejero de noche, con luces de la ciudad desenfocadas al fondo.'],
+    ['vintageretrato','retrato','/vintageretrato','Look vintage','Grano de película, tonos años 80.','Aplica un look vintage analógico a esta foto de {sujeto}, con grano de película y colores desaturados de los años 80.'],
+    ['graduacion','retrato','/graduacion','Retrato formal','Fondo degradado clásico.','Convierte esta foto en un retrato formal tipo graduación de {sujeto}, con fondo degradado clásico e iluminación uniforme.'],
+    ['familia','retrato','/familia','Foto grupal uniforme','Mismo tono e iluminación para todos.','Ajusta esta foto grupal de {sujeto} para que la iluminación y el tono de color sean uniformes entre todas las personas.'],
+    ['silueta','retrato','/silueta','Retrato en silueta','Contraluz cálido de atardecer.','Convierte a {sujeto} en una silueta oscura contra un fondo de luz cálida de atardecer, resaltando solo el contorno.'],
+    ['expresion','retrato','/expresion','Expresión más natural','Sin cambiar identidad ni rasgos.','Ajusta la expresión facial de {sujeto} para que luzca más natural y relajada, sin cambiar la identidad ni los rasgos.'],
+
+    ['quitarfondo','edicion','/quitarfondo','Quitar fondo','Fondo transparente o blanco limpio.','Elimina el fondo de esta foto de {sujeto} dejándolo sobre un fondo transparente o blanco limpio.'],
+    ['cambiarfondo','edicion','/cambiarfondo','Cambiar fondo','Nueva escena, luz coherente.','Reemplaza el fondo de esta foto de {sujeto} por una nueva escena, ajustando la iluminación para que se vea coherente.'],
+    ['upscale','edicion','/upscale','Aumentar resolución','Más nitidez, sin artefactos.','Aumenta la resolución de esta foto de {sujeto}, mejorando la nitidez y el detalle fino sin generar artefactos.'],
+    ['quitarobjeto','edicion','/quitarobjeto','Eliminar objeto','Relleno natural y coherente.','Elimina de esta foto el elemento no deseado cerca de {sujeto}, rellenando el espacio de forma natural y coherente.'],
+    ['restaurar','edicion','/restaurar','Reparar foto dañada','Rasgaduras, dobleces, zonas desteñidas.','Repara esta foto dañada de {sujeto}, corrigiendo rasgaduras, dobleces y zonas desteñidas.'],
+    ['colorizar','edicion','/colorizar','Colorizar imagen','Tonos realistas y naturales.','Colorea esta imagen en blanco y negro de {sujeto} con tonos realistas y naturales.'],
+    ['enderezar','edicion','/enderezar','Enderezar y recortar','Regla de los tercios.','Endereza el horizonte de esta foto de {sujeto} y recorta la composición siguiendo la regla de los tercios.'],
+    ['hdr','edicion','/hdr','Ampliar rango dinámico','Recupera luces y sombras quemadas.','Balancea las luces y sombras de esta foto de {sujeto} con un efecto HDR sutil, recuperando detalle en zonas quemadas y oscuras.'],
+    ['diaanoche','edicion','/diaanoche','Convertir día a noche','Cielo y luces artificiales coherentes.','Convierte esta escena de {sujeto} de foto diurna a nocturna, ajustando el cielo y añadiendo luces artificiales coherentes.'],
+    ['clima','edicion','/clima','Cambiar clima','Lluvia y reflejos húmedos.','Cambia la condición climática de esta foto de {sujeto} a un día lluvioso, con reflejos húmedos en las superficies.'],
+    ['vineta','edicion','/vineta','Look cinematográfico','Viñeta suave y gradación de color.','Aplica una viñeta suave y una gradación de color cinematográfica a esta foto de {sujeto}.'],
+    ['expandir','edicion','/expandir','Expandir bordes','Amplía el encuadre original.','Expande los bordes de esta foto de {sujeto}, generando contenido coherente con la escena original para ampliar el encuadre.'],
+    ['nitidez','edicion','/nitidez','Mejorar enfoque','Detalle fino sin ruido digital.','Mejora el enfoque y el detalle fino de esta foto de {sujeto} sin generar ruido ni artefactos digitales.'],
+    ['colorgrade','edicion','/colorgrade','Gradación de color','Teal en sombras, naranja en piel.','Aplica una gradación de color cinematográfica a esta foto de {sujeto}, con tonos teal en sombras y naranja en la piel.'],
+    ['estilomoderno','edicion','/estilomoderno','Modernizar estilo','Conserva el contenido original.','Actualiza el estilo visual de esta foto antigua de {sujeto} a una estética contemporánea, conservando el contenido original.'],
+    ['insertartexto','edicion','/insertartexto','Insertar texto en escena','Integrado como si fuera real.','Integra un espacio para texto de forma natural en esta foto de {sujeto}, como si estuviera impreso en la escena, por ejemplo en un cartel, pared o etiqueta.'],
+    ['perspectiva','edicion','/perspectiva','Corregir perspectiva','Líneas verticales y horizontales rectas.','Corrige la distorsión de lente y la perspectiva de esta foto de {sujeto}, enderezando las líneas verticales y horizontales.'],
+    ['limpiar','edicion','/limpiar','Limpiar la escena','Elimina lo que distrae del fondo.','Limpia esta foto de {sujeto} eliminando los elementos que distraen del fondo, dejando la composición más ordenada.']
+  ].map(function(r){
+    return {id:r[0],cat:r[1],trig:r[2],title:r[3],desc:r[4],template:r[5]};
+  });
+
+  var CATS = {
+    producto:{label:'Producto',color:'var(--accent)'},
+    retrato:{label:'Retratos',color:'var(--accent-2)'},
+    edicion:{label:'Edición',color:'var(--accent-3)'}
+  };
+
+  var els = {
+    grid: document.getElementById('cmd-grid'),
+    pills: document.getElementById('pills'),
+    search: document.getElementById('in-search'),
+    sujeto: document.getElementById('in-sujeto'),
+    detalle: document.getElementById('in-detalle'),
+    count: document.getElementById('count-line'),
+    selTrig: document.getElementById('sel-trig'),
+    selTitle: document.getElementById('sel-title'),
+    promptBox: document.getElementById('prompt-box'),
+    copyBtn: document.getElementById('copy-btn'),
+    copyHint: document.getElementById('copy-hint'),
+    statTotal: document.getElementById('stat-total')
+  };
+
+  var state = {
+    filter: 'all',
+    query: '',
+    selectedId: 'showcase'
+  };
+
+  els.statTotal.textContent = DATA.length;
+
+  var pillDefs = [{id:'all',label:'Todos'}].concat(
+    Object.keys(CATS).map(function(k){ return {id:k,label:CATS[k].label,color:CATS[k].color}; })
+  );
+  pillDefs.forEach(function(p){
+    var btn = document.createElement('button');
+    btn.type='button'; btn.className='pill'; btn.dataset.filter=p.id;
+    btn.setAttribute('aria-pressed', String(p.id===state.filter));
+    var dotHtml = p.color ? '<span class="dot" style="background:'+p.color+'"></span>' : '';
+    btn.innerHTML = dotHtml + p.label;
+    btn.addEventListener('click', function(){
+      state.filter = p.id;
+      Array.prototype.forEach.call(els.pills.children, function(c){
+        c.setAttribute('aria-pressed', String(c.dataset.filter===p.id));
+      });
+      renderGrid();
+    });
+    els.pills.appendChild(btn);
+  });
+
+  els.search.addEventListener('input', function(){
+    state.query = els.search.value.trim().toLowerCase().replace(/^\//,'');
+    renderGrid();
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key==='/' && document.activeElement!==els.search && document.activeElement!==els.sujeto && document.activeElement!==els.detalle){
+      e.preventDefault(); els.search.focus();
+    }
+  });
+
+  function matches(cmd){
+    if(state.filter!=='all' && cmd.cat!==state.filter) return false;
+    if(!state.query) return true;
+    var q = state.query;
+    return cmd.trig.toLowerCase().indexOf(q)>-1 ||
+           cmd.title.toLowerCase().indexOf(q)>-1 ||
+           cmd.desc.toLowerCase().indexOf(q)>-1;
+  }
+
+  function renderGrid(){
+    var list = DATA.filter(matches);
+    els.count.textContent = list.length + (list.length===1 ? ' comando' : ' comandos');
+    els.grid.innerHTML='';
+    if(list.length===0){
+      var empty = document.createElement('div');
+      empty.className='empty-state';
+      empty.textContent = 'Ningún comando coincide. Prueba con otra palabra o rollo.';
+      els.grid.appendChild(empty);
+      return;
+    }
+    list.forEach(function(cmd){
+      var card = document.createElement('button');
+      card.type='button'; card.className='cmd-card';
+      card.setAttribute('aria-pressed', String(cmd.id===state.selectedId));
+      card.innerHTML =
+        '<span class="trig">'+cmd.trig+'</span>'+
+        '<span class="title">'+cmd.title+'</span>'+
+        '<span class="desc">'+cmd.desc+'</span>'+
+        '<span class="tag"><span class="dot" style="background:'+CATS[cmd.cat].color+'"></span>'+CATS[cmd.cat].label+'</span>';
+      card.addEventListener('click', function(){
+        state.selectedId = cmd.id;
+        Array.prototype.forEach.call(els.grid.children, function(c){ c.setAttribute && c.setAttribute('aria-pressed','false'); });
+        card.setAttribute('aria-pressed','true');
+        renderResult();
+        if(window.innerWidth < 900){
+          document.querySelector('.result').scrollIntoView({behavior:'smooth', block:'start'});
+        }
+      });
+      els.grid.appendChild(card);
+    });
+  }
+
+  function buildPrompt(cmd){
+    var sujeto = els.sujeto.value.trim() || '[tu producto o foto]';
+    var detalle = els.detalle.value.trim();
+    var body = cmd.template.split('{sujeto}').join(sujeto);
+    var extra = '';
+    if(detalle){
+      extra = ' ' + detalle + (/[.!?]$/.test(detalle) ? '' : '.');
+    }
+    return body + extra + ' Resultado realista, alta resolución y calidad fotográfica profesional.';
+  }
+
+  function renderResult(){
+    var cmd = DATA.find(function(c){ return c.id===state.selectedId; }) || DATA[0];
+    els.selTrig.textContent = cmd.trig;
+    els.selTitle.textContent = cmd.title;
+    els.promptBox.textContent = buildPrompt(cmd);
+    els.copyHint.textContent='';
+    els.copyBtn.dataset.copied='false';
+    els.copyBtn.textContent='Copiar prompt';
+  }
+
+  [els.sujeto, els.detalle].forEach(function(el){
+    el.addEventListener('input', renderResult);
+  });
+
+  els.copyBtn.addEventListener('click', function(){
+    var text = els.promptBox.textContent;
+    function done(ok){
+      els.copyBtn.dataset.copied = ok ? 'true' : 'false';
+      els.copyBtn.textContent = ok ? '¡Copiado!' : 'No se pudo copiar';
+      els.copyHint.textContent = ok ? '' : 'Selecciona el texto manualmente.';
+      setTimeout(function(){
+        els.copyBtn.dataset.copied='false';
+        els.copyBtn.textContent='Copiar prompt';
+      }, 1600);
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){done(true);}).catch(function(){ fallbackCopy(); });
+    } else {
+      fallbackCopy();
+    }
+    function fallbackCopy(){
+      try{
+        var ta=document.createElement('textarea');
+        ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        var ok=document.execCommand('copy');
+        document.body.removeChild(ta);
+        done(ok);
+      }catch(e){ done(false); }
+    }
+  });
+
+  els.sujeto.value = 'unas zapatillas deportivas blancas con detalles dorados';
+  els.detalle.value = 'mantener el logo lateral visible en todo momento';
+
+  renderGrid();
+  renderResult();
+})();
+</script>
+</body>
+</html>
