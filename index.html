@@ -21,6 +21,8 @@
     --accent-3:#a8701c;
     --focus:#d84226;
     --shadow: 0 1px 2px rgba(23,22,20,.04), 0 8px 24px -12px rgba(23,22,20,.18);
+    --c1:#a9780f; --c2:#2f6690; --c3:#6b4296; --c4:#2f7d4f;
+    --c5:#b23862; --c6:#3a4a99; --c7:#a84e22; --c8:#1f7d80;
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
@@ -38,6 +40,8 @@
       --accent-3:#e3a94a;
       --focus:#ff6a48;
       --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 32px -14px rgba(0,0,0,.6);
+      --c1:#e3ad3f; --c2:#6fa8d8; --c3:#b393d9; --c4:#5fc48a;
+      --c5:#e2699a; --c6:#8d9de8; --c7:#e08a56; --c8:#4fc2c4;
     }
   }
   :root[data-theme="dark"]{
@@ -55,6 +59,8 @@
     --accent-3:#e3a94a;
     --focus:#ff6a48;
     --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 32px -14px rgba(0,0,0,.6);
+    --c1:#e3ad3f; --c2:#6fa8d8; --c3:#b393d9; --c4:#5fc48a;
+    --c5:#e2699a; --c6:#8d9de8; --c7:#e08a56; --c8:#4fc2c4;
   }
 
   *{box-sizing:border-box}
@@ -75,7 +81,7 @@
 
   header.top{
     display:flex; flex-direction:column; gap:10px;
-    padding-bottom:22px; margin-bottom:22px;
+    padding-bottom:18px; margin-bottom:18px;
     border-bottom:1px solid var(--line);
   }
   .eyebrow{
@@ -97,6 +103,31 @@
   .stat-row{ display:flex; flex-wrap:wrap; gap:18px; margin-top:4px; }
   .stat{ font-family:"JetBrains Mono",monospace; font-size:.78rem; color:var(--ink-faint); }
   .stat b{ color:var(--ink); font-weight:700; }
+
+  .section-tabs{
+    display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;
+  }
+  .section-tab{
+    flex:1 1 220px; display:flex; flex-direction:column; gap:2px;
+    text-align:left; cursor:pointer; font:inherit;
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:12px; padding:12px 16px;
+    transition:border-color .12s ease, background .12s ease;
+  }
+  .section-tab:hover{ border-color:var(--line-strong); }
+  .section-tab:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
+  .section-tab .st-label{
+    font-weight:700; font-size:.94rem; display:flex; align-items:center; gap:8px;
+  }
+  .section-tab .st-sub{ font-size:.76rem; color:var(--ink-faint); }
+  .section-tab[aria-pressed="true"]{
+    background:var(--ink); border-color:var(--ink);
+  }
+  .section-tab[aria-pressed="true"] .st-label{ color:var(--paper); }
+  .section-tab[aria-pressed="true"] .st-sub{ color:var(--ink-faint); }
+  .section-tab .st-icon{
+    width:9px; height:9px; border-radius:50%; flex:none;
+  }
 
   .board{
     display:grid;
@@ -142,7 +173,7 @@
     border-radius:9px; padding:10px 12px; resize:vertical;
     font-family:"Archivo",sans-serif;
   }
-  textarea{ min-height:44px; line-height:1.4; }
+  textarea{ min-height:46px; line-height:1.4; }
   input[type="text"]:focus, textarea:focus, .cmd-search input:focus{
     outline:2px solid var(--focus); outline-offset:1px; border-color:transparent;
   }
@@ -247,6 +278,7 @@
     margin-top:34px; padding-top:16px; border-top:1px solid var(--line);
     font-size:.78rem; color:var(--ink-faint); line-height:1.6; max-width:72ch;
   }
+  footer.legal a{ color:var(--ink-soft); font-weight:600; }
 
   @media (prefers-reduced-motion: reduce){
     *{ transition:none !important; animation:none !important; }
@@ -257,23 +289,25 @@
 
 <div class="wrap">
   <header class="top">
-    <div class="eyebrow"><span class="dot"></span> sistema de comandos para fotos con IA</div>
+    <div class="eyebrow"><span class="dot"></span> comandos tipo "/" que arman el prompt por ti</div>
     <h1>Fotocomandos</h1>
-    <p>Un cuaderno de comandos tipo "/" que no ejecuta nada por sí solo, pero convierte cada idea en un prompt completo. Describe tu foto una vez, elige un comando y copia el resultado en el editor o generador de imágenes con IA que uses.</p>
+    <p>Un cuaderno de comandos que no ejecuta nada por sí solo, pero convierte cada idea en un prompt completo. Describe tu material una vez, elige un comando y copia el resultado donde lo necesites.</p>
     <div class="stat-row">
       <div class="stat"><b id="stat-total">86</b> comandos</div>
-      <div class="stat"><b>3</b> rollos · producto, retratos, edición</div>
+      <div class="stat"><b id="stat-cats">3</b> <span id="stat-cats-label">rollos · producto, retratos, edición</span></div>
     </div>
   </header>
 
+  <div class="section-tabs" id="section-tabs" role="group" aria-label="Elegir sección"></div>
+
   <div class="board">
     <section class="panel subject">
-      <h2>1 · Tu foto</h2>
-      <p class="panel-sub">Descríbela una vez; se reutiliza en cualquier comando que elijas abajo.</p>
+      <h2 id="panel-1-title">1 · Tu foto</h2>
+      <p class="panel-sub" id="panel-1-sub">Descríbela una vez; se reutiliza en cualquier comando que elijas abajo.</p>
       <div class="field-row">
         <div>
-          <label class="field-label" for="in-sujeto">Sujeto (qué o quién aparece en la foto)</label>
-          <input type="text" id="in-sujeto" placeholder="p. ej. unas zapatillas deportivas blancas con detalles dorados">
+          <label class="field-label" id="field1-label" for="in-field1">Sujeto (qué o quién aparece en la foto)</label>
+          <textarea id="in-field1" placeholder="p. ej. unas zapatillas deportivas blancas con detalles dorados"></textarea>
         </div>
         <div>
           <label class="field-label" for="in-detalle">Detalles extra (opcional)</label>
@@ -286,10 +320,10 @@
       <h2 style="margin-bottom:10px">2 · Elige un comando</h2>
       <div class="cmd-search">
         <span class="slash">/</span>
-        <input type="text" id="in-search" placeholder="Escribe para buscar (ej. neon, retrato, fondo)…" autocomplete="off">
+        <input type="text" id="in-search" placeholder="Escribe para buscar…" autocomplete="off">
         <span class="kbd">/</span>
       </div>
-      <div class="pills" id="pills" role="group" aria-label="Filtrar por rollo"></div>
+      <div class="pills" id="pills" role="group" aria-label="Filtrar por categoría"></div>
     </section>
 
     <section class="grid-wrap">
@@ -306,19 +340,19 @@
         <button class="copy-btn" id="copy-btn" type="button">Copiar prompt</button>
         <span class="copy-hint" id="copy-hint"></span>
       </div>
-      <p class="usage-note">Pega este texto junto a tu foto en la herramienta de edición o generación de imágenes con IA que uses. No es un comando reconocido por ningún chatbot — es una plantilla de prompt lista para reutilizar.</p>
+      <p class="usage-note" id="usage-note">Pega este texto junto a tu foto en la herramienta de edición o generación de imágenes con IA que uses. No es un comando reconocido por ningún chatbot — es una plantilla de prompt lista para reutilizar.</p>
     </aside>
   </div>
 
   <footer class="legal">
-    Fotocomandos es una referencia de prompts, no una integración oficial de ninguna plataforma de IA. Los resultados dependen por completo de la herramienta de generación o edición de imágenes que utilices para pegarlos.
+    Fotocomandos es una referencia de prompts, no una integración oficial de ninguna plataforma de IA. Los resultados dependen por completo de la herramienta que utilices para pegarlos: imágenes en la sección Fotografía, texto en Pensar y trabajar.
   </footer>
 </div>
 
 <script>
 (function(){
-  // [id, category, trigger, title, shortDesc, template]
-  var DATA = [
+  // ===== SECCIÓN: FOTOGRAFÍA — [id, cat, trigger, title, shortDesc, template] =====
+  var PHOTO_RAW = [
     ['showcase','producto','/showcase','Fotografía publicitaria premium','Iluminación cinematográfica y reflejos de estudio.','Transforma {sujeto} en una fotografía publicitaria premium, con iluminación cinematográfica, reflejos sutiles y un escenario sofisticado que resalte sus formas y materiales.'],
     ['metaad','producto','/metaad','Anuncio para Meta Ads','Composición llamativa con espacio para copy.','Crea un anuncio visual para Meta Ads con {sujeto} como protagonista absoluto, composición llamativa y espacio limpio en la parte superior para agregar texto publicitario.'],
     ['3dbillboard','producto','/3dbillboard','Valla publicitaria 3D anamórfica','Escenario urbano, perspectiva forzada.','Coloca {sujeto} dentro de una gigantesca valla publicitaria 3D anamórfica en un cruce urbano nocturno, con la perspectiva forzada característica de estos anuncios.'],
@@ -369,7 +403,6 @@
     ['ugc','producto','/ugc','Estilo UGC','Look natural, no artificial.','Integra {sujeto} en una fotografía natural y espontánea, con la estética de contenido generado por usuarios (UGC), sin verse artificial.'],
     ['viral','producto','/viral','Imagen viral','Exagerada, hecha para detener el scroll.','Crea una imagen de {sujeto} intencionalmente exagerada y sorprendente, diseñada para captar la atención al instante en redes sociales.'],
     ['hero','producto','/hero','Hero de campaña','La imagen principal definitiva.','Crea la imagen principal definitiva de campaña con {sujeto} como protagonista absoluto, acabado publicitario premium y composición equilibrada.'],
-
     ['headshot','retrato','/headshot','Retrato profesional','Fondo neutro, estilo LinkedIn.','Convierte esta foto en un retrato profesional tipo LinkedIn de {sujeto}, con fondo neutro desenfocado e iluminación de estudio favorecedora.'],
     ['retoque','retrato','/retoque','Retoque de piel natural','Sin exagerar, textura real.','Retoca suavemente la piel de {sujeto} manteniendo la textura natural, sin exagerar ni perder realismo.'],
     ['byn','retrato','/byn','Blanco y negro dramático','Alto contraste, sombras marcadas.','Convierte esta foto de {sujeto} en un blanco y negro dramático, con alto contraste y sombras marcadas.'],
@@ -388,7 +421,6 @@
     ['familia','retrato','/familia','Foto grupal uniforme','Mismo tono e iluminación para todos.','Ajusta esta foto grupal de {sujeto} para que la iluminación y el tono de color sean uniformes entre todas las personas.'],
     ['silueta','retrato','/silueta','Retrato en silueta','Contraluz cálido de atardecer.','Convierte a {sujeto} en una silueta oscura contra un fondo de luz cálida de atardecer, resaltando solo el contorno.'],
     ['expresion','retrato','/expresion','Expresión más natural','Sin cambiar identidad ni rasgos.','Ajusta la expresión facial de {sujeto} para que luzca más natural y relajada, sin cambiar la identidad ni los rasgos.'],
-
     ['quitarfondo','edicion','/quitarfondo','Quitar fondo','Fondo transparente o blanco limpio.','Elimina el fondo de esta foto de {sujeto} dejándolo sobre un fondo transparente o blanco limpio.'],
     ['cambiarfondo','edicion','/cambiarfondo','Cambiar fondo','Nueva escena, luz coherente.','Reemplaza el fondo de esta foto de {sujeto} por una nueva escena, ajustando la iluminación para que se vea coherente.'],
     ['upscale','edicion','/upscale','Aumentar resolución','Más nitidez, sin artefactos.','Aumenta la resolución de esta foto de {sujeto}, mejorando la nitidez y el detalle fino sin generar artefactos.'],
@@ -407,21 +439,168 @@
     ['insertartexto','edicion','/insertartexto','Insertar texto en escena','Integrado como si fuera real.','Integra un espacio para texto de forma natural en esta foto de {sujeto}, como si estuviera impreso en la escena, por ejemplo en un cartel, pared o etiqueta.'],
     ['perspectiva','edicion','/perspectiva','Corregir perspectiva','Líneas verticales y horizontales rectas.','Corrige la distorsión de lente y la perspectiva de esta foto de {sujeto}, enderezando las líneas verticales y horizontales.'],
     ['limpiar','edicion','/limpiar','Limpiar la escena','Elimina lo que distrae del fondo.','Limpia esta foto de {sujeto} eliminando los elementos que distraen del fondo, dejando la composición más ordenada.']
-  ].map(function(r){
-    return {id:r[0],cat:r[1],trig:r[2],title:r[3],desc:r[4],template:r[5]};
+  ];
+  var PHOTO_DATA = PHOTO_RAW.map(function(r){
+    return {id:r[0],cat:r[1],trig:r[2],title:r[3],desc:r[4],template:r[5],kind:'foto'};
   });
-
-  var CATS = {
+  var PHOTO_CATS = {
     producto:{label:'Producto',color:'var(--accent)'},
     retrato:{label:'Retratos',color:'var(--accent-2)'},
     edicion:{label:'Edición',color:'var(--accent-3)'}
   };
 
+  // ===== SECCIÓN: PENSAR Y TRABAJAR — [catIndex, trigger, title, desc] =====
+  var WORK_CATS_LIST = [
+    {key:'claridad', label:'Claridad y pensamiento', color:'var(--c1)'},
+    {key:'investigacion', label:'Investigación y síntesis', color:'var(--c2)'},
+    {key:'escritura', label:'Escritura y comunicación', color:'var(--c3)'},
+    {key:'productividad', label:'Productividad y ejecución', color:'var(--c4)'},
+    {key:'marketing', label:'Marketing y contenido', color:'var(--c5)'},
+    {key:'negocio', label:'Negocio y ventas', color:'var(--c6)'},
+    {key:'aprendizaje', label:'Aprendizaje y decisiones', color:'var(--c7)'},
+    {key:'creatividad', label:'Creatividad y automatización', color:'var(--c8)'}
+  ];
+  var WORK_RAW = [
+    [0,'/prompt-architect','Arquitecto de prompts','Convierte una idea vaga en un prompt claro, completo y listo para ejecutar.'],
+    [0,'/untangle','Desenredador de ideas','Ordena pensamientos mezclados y los transforma en una estructura comprensible.'],
+    [0,'/socratic','Preguntas socráticas','Hace preguntas precisas hasta descubrir lo que realmente quieres resolver.'],
+    [0,'/mind-map','Mapa mental','Organiza un tema en ramas, relaciones y prioridades visuales.'],
+    [0,'/first-principles','Primeros principios','Reduce un problema a sus fundamentos para encontrar soluciones originales.'],
+    [0,'/assumption-check','Detector de supuestos','Identifica las creencias no comprobadas que pueden debilitar una decisión.'],
+    [0,'/devils-advocate','Abogado del diablo','Ataca una idea con argumentos fuertes para descubrir sus puntos débiles.'],
+    [0,'/simplify','Simplificador radical','Explica cualquier concepto con menos palabras y más claridad.'],
+    [0,'/layered-explain','Explicador en capas','Explica un tema desde una versión básica hasta una versión avanzada.'],
+    [0,'/compare','Comparador de opciones','Compara alternativas usando los mismos criterios y muestra sus diferencias.'],
+    [0,'/decision-criteria','Generador de criterios','Define qué debes evaluar antes de elegir entre varias opciones.'],
+    [0,'/contradictions','Buscador de contradicciones','Encuentra inconsistencias entre objetivos, argumentos y acciones.'],
+    [0,'/problem-framer','Definidor del problema','Reformula un problema para que sea concreto, medible y accionable.'],
+    [0,'/goal-clarifier','Convertidor de objetivos','Convierte deseos generales en objetivos específicos y verificables.'],
+    [0,'/executive-brief','Resumen ejecutivo','Condensa información compleja en una síntesis útil para decidir rápido.'],
+    [1,'/research-plan','Plan de investigación','Diseña preguntas, fuentes, pasos y criterios para investigar mejor.'],
+    [1,'/evidence-hunter','Buscador de evidencia','Separa datos, opiniones, ejemplos y afirmaciones que todavía necesitan prueba.'],
+    [1,'/source-synth','Sintetizador de fuentes','Une varias fuentes en una explicación coherente sin repetir información.'],
+    [1,'/study-compare','Comparador de estudios','Compara métodos, resultados, limitaciones y conclusiones de distintos estudios.'],
+    [1,'/data-extract','Extractor de datos','Extrae nombres, cifras, fechas, decisiones y patrones de un documento.'],
+    [1,'/fact-check','Verificador de hechos','Marca qué afirmaciones deben verificarse y qué evidencia las respaldaría.'],
+    [1,'/bias-check','Detector de sesgos','Señala sesgos, omisiones y marcos que pueden distorsionar una conclusión.'],
+    [1,'/timeline','Cronología inteligente','Convierte acontecimientos dispersos en una línea de tiempo clara.'],
+    [1,'/stakeholder-map','Mapa de actores','Identifica quién influye, quién decide, quién se beneficia y quién puede bloquear.'],
+    [1,'/competitor-scan','Analista de competencia','Compara competidores por oferta, mensaje, audiencia, fortalezas y vacíos.'],
+    [1,'/pdf-digest','Lector de PDF','Resume un PDF y extrae sus ideas, datos, riesgos y acciones recomendadas.'],
+    [1,'/jargon-translator','Traductor de jerga','Convierte lenguaje técnico en explicaciones que cualquier persona pueda entender.'],
+    [1,'/notes-to-brief','Convertidor de notas','Transforma notas sueltas en un brief ordenado y listo para compartir.'],
+    [1,'/lit-review','Revisor de literatura','Agrupa hallazgos, debates y vacíos de conocimiento sobre un tema.'],
+    [1,'/trend-radar','Radar de tendencias','Distingue tendencias duraderas, modas pasajeras y señales que vale la pena probar.'],
+    [2,'/clear-editor','Editor de claridad','Reescribe un texto para que se entienda a la primera lectura.'],
+    [2,'/tone-shifter','Cambiador de tono','Adapta un mismo mensaje a un tono profesional, cercano, firme o inspirador.'],
+    [2,'/natural-translate','Traductor natural','Traduce manteniendo sentido, intención, ritmo y naturalidad cultural.'],
+    [2,'/style-polish','Corrector de estilo','Mejora fluidez, gramática, ritmo y consistencia sin cambiar la idea.'],
+    [2,'/headline-lab','Titular irresistible','Genera titulares claros, específicos y atractivos para probar.'],
+    [2,'/hook-maker','Generador de ganchos','Crea aperturas que despiertan curiosidad sin prometer de más.'],
+    [2,'/story-arc','Arquitecto de storytelling','Organiza una historia con tensión, giro, aprendizaje y cierre.'],
+    [2,'/short-script','Guionista breve','Convierte una idea en un guion corto con escenas, voz y ritmo.'],
+    [2,'/voice-match','Revisor de voz','Hace que un texto suene como una persona, marca o creador específico.'],
+    [2,'/format-shifter','Convertidor de formato','Transforma un artículo en email, post, guion, carrusel o presentación.'],
+    [2,'/email-editor','Editor de emails','Escribe emails breves con asunto, contexto, petición y siguiente paso.'],
+    [2,'/diplomatic-reply','Respuesta diplomática','Redacta respuestas firmes y respetuosas para conversaciones delicadas.'],
+    [2,'/executive-summary','Resumidor ejecutivo','Reduce un texto largo a decisiones, riesgos, cifras y próximos pasos.'],
+    [2,'/draft-expander','Expansor de borradores','Convierte una idea corta en un borrador completo sin rellenar por rellenar.'],
+    [2,'/precision-edit','Editor de precisión','Elimina ambigüedades, palabras débiles y frases que pueden interpretarse mal.'],
+    [3,'/week-plan','Planificador semanal','Convierte prioridades en un plan semanal realista con bloques de trabajo.'],
+    [3,'/priority','Priorizador brutal','Separa lo importante de lo urgente y elimina tareas de bajo impacto.'],
+    [3,'/project-breakdown','Desglosador de proyectos','Divide un proyecto grande en entregables, tareas, responsables y dependencias.'],
+    [3,'/checklist','Convertidor a checklist','Transforma instrucciones o procesos en una lista verificable paso a paso.'],
+    [3,'/sop-builder','Diseñador de SOP','Crea procedimientos operativos estándar fáciles de repetir y delegar.'],
+    [3,'/meeting-prep','Asistente de reuniones','Prepara agenda, preguntas, decisiones necesarias y material previo.'],
+    [3,'/meeting-notes','Acta accionable','Convierte una reunión en acuerdos, responsables, fechas y pendientes.'],
+    [3,'/task-followup','Seguimiento de tareas','Redacta recordatorios claros sin sonar agresivo ni confuso.'],
+    [3,'/time-block','Bloques de tiempo','Distribuye trabajo profundo, reuniones y descansos según energía y prioridad.'],
+    [3,'/routine-automator','Automatizador de rutina','Detecta tareas repetitivas y propone una automatización segura.'],
+    [3,'/file-organizer','Organizador de archivos','Diseña una estructura de carpetas y nombres para encontrar todo rápido.'],
+    [3,'/template-maker','Constructor de plantillas','Crea plantillas reutilizables para ahorrar tiempo en tareas repetidas.'],
+    [3,'/delegate','Delegador inteligente','Define qué delegar, a quién, con qué instrucciones y cómo revisar el resultado.'],
+    [3,'/presentation-builder','Preparador de presentaciones','Convierte información en una secuencia de diapositivas con mensaje y narrativa.'],
+    [3,'/deliverable-review','Revisor de entregables','Revisa un trabajo antes de enviarlo y detecta fallos, omisiones y riesgos.'],
+    [4,'/content-strategy','Estratega de contenido','Conecta objetivos de negocio, audiencia, temas, formatos y frecuencia.'],
+    [4,'/idea-engine','Generador de ideas','Produce ideas originales a partir de una audiencia, problema y objetivo.'],
+    [4,'/editorial-calendar','Calendario editorial','Organiza temas y formatos en un calendario de publicación sostenible.'],
+    [4,'/carousel','Carrusel de Instagram','Convierte una idea o referencia en láminas claras, atractivas y accionables.'],
+    [4,'/reel-script','Guion de Reel','Escribe un Reel con gancho, desarrollo, cortes, texto en pantalla y CTA.'],
+    [4,'/comment-insights','Analista de comentarios','Agrupa preguntas y frustraciones reales para descubrir nuevos contenidos.'],
+    [4,'/pain-points','Detector de puntos de dolor','Identifica dificultades concretas que una oferta puede quitarle a la audiencia.'],
+    [4,'/cta-lab','Creador de CTA','Genera llamadas a la acción específicas, creíbles y conectadas con el objetivo.'],
+    [4,'/title-test','Laboratorio de títulos','Crea variaciones de títulos y explica qué promesa hace cada una.'],
+    [4,'/offer-builder','Diseñador de oferta','Convierte una solución en una oferta clara con resultado, mecanismo y prueba.'],
+    [4,'/brand-message','Mensaje de marca','Resume qué haces, para quién, qué problema resuelves y por qué confiar.'],
+    [4,'/audience-profile','Perfil de audiencia','Describe situación, deseos, objeciones y lenguaje de una audiencia concreta.'],
+    [4,'/cross-platform','Adaptador multiplataforma','Adapta un contenido a Instagram, LinkedIn, TikTok, email y blog.'],
+    [4,'/repurpose','Reutilizador de contenido','Extrae piezas nuevas de un contenido largo sin repetirlo de forma aburrida.'],
+    [4,'/landing-audit','Auditor de landing page','Revisa claridad, prueba, fricción, estructura y llamadas a la acción de una página.'],
+    [5,'/customer-research','Investigador de cliente','Diseña preguntas para conocer necesidades, hábitos, objeciones y lenguaje real.'],
+    [5,'/lead-qualifier','Calificador de leads','Ordena prospectos según necesidad, urgencia, encaje y capacidad de compra.'],
+    [5,'/sales-script','Guion de venta','Crea una conversación de venta basada en preguntas y diagnóstico, no presión.'],
+    [5,'/objection-handler','Respuesta a objeciones','Convierte objeciones en respuestas honestas, claras y orientadas a decisión.'],
+    [5,'/proposal-maker','Propuesta comercial','Redacta una propuesta con problema, solución, alcance, inversión y próximos pasos.'],
+    [5,'/case-study','Constructor de casos','Convierte una experiencia de cliente en un caso con contexto, proceso y resultado.'],
+    [5,'/onboarding','Diseñador de onboarding','Crea una bienvenida que reduzca dudas y acelere el primer resultado.'],
+    [5,'/churn-analysis','Analista de abandono','Busca razones de cancelación y propone acciones para mejorar la retención.'],
+    [5,'/pricing','Calculadora de precios','Compara modelos de precio según valor, costes, riesgo y percepción del cliente.'],
+    [5,'/customer-journey','Mapa de experiencia','Describe cada etapa del cliente y las fricciones que conviene eliminar.'],
+    [6,'/tutor','Tutor socrático','Enseña haciendo preguntas y ajusta la explicación según tus respuestas.'],
+    [6,'/study-plan','Plan de estudio','Diseña un plan de aprendizaje con objetivos, sesiones, práctica y revisión.'],
+    [6,'/practice-maker','Creador de ejercicios','Genera ejercicios progresivos para practicar una habilidad concreta.'],
+    [6,'/quiz-master','Examinador','Crea preguntas, evalúa respuestas y explica los errores sin humillar.'],
+    [6,'/spaced-repetition','Memoria espaciada','Convierte conceptos en tarjetas y repasos programados.'],
+    [6,'/analogies','Explicador con analogías','Explica ideas difíciles usando comparaciones simples y memorables.'],
+    [6,'/interview-sim','Simulador de entrevista','Practica entrevistas con preguntas realistas, repreguntas y feedback.'],
+    [6,'/feedback-coach','Coach de feedback','Convierte observaciones vagas en feedback específico, útil y respetuoso.'],
+    [6,'/decision-matrix','Matriz de decisión','Puntúa alternativas con criterios, pesos y una recomendación transparente.'],
+    [6,'/pre-mortem','Pre-mortem','Imagina por qué un plan fracasaría para prevenir problemas antes de empezar.'],
+    [7,'/experiment-lab','Generador de experimentos','Propone pruebas pequeñas para validar una idea antes de invertir más.'],
+    [7,'/test-designer','Diseñador de pruebas','Define hipótesis, variables, muestra, métricas y criterio de éxito.'],
+    [7,'/automation-builder','Constructor de automatizaciones','Convierte un proceso repetitivo en un flujo con disparadores y acciones.'],
+    [7,'/postmortem','Analista post-mortem','Revisa qué ocurrió, qué aprendiste y qué cambiarás en el siguiente intento.'],
+    [7,'/skill-composer','Combinador de habilidades','Combina varias skills en un flujo completo para resolver trabajos complejos.']
+  ];
+  var WORK_DATA = WORK_RAW.map(function(r,i){
+    return {id:'w'+i, cat:WORK_CATS_LIST[r[0]].key, trig:r[1], title:r[2], desc:r[3], kind:'work'};
+  });
+  var WORK_CATS = {};
+  WORK_CATS_LIST.forEach(function(c){ WORK_CATS[c.key] = {label:c.label, color:c.color}; });
+
+  var SECTIONS = {
+    foto: {
+      label:'Fotografía', icon:'var(--accent)', data:PHOTO_DATA, cats:PHOTO_CATS,
+      statLabel:'rollos · producto, retratos, edición',
+      panel1Title:'1 · Tu foto', panel1Sub:'Descríbela una vez; se reutiliza en cualquier comando que elijas abajo.',
+      field1Label:'Sujeto (qué o quién aparece en la foto)', field1Placeholder:'p. ej. unas zapatillas deportivas blancas con detalles dorados',
+      detalleePlaceholder:'p. ej. mantener el logo visible, tono de marca azul marino',
+      searchPlaceholder:'Escribe para buscar (ej. neon, retrato, fondo)…',
+      usageNote:'Pega este texto junto a tu foto en la herramienta de edición o generación de imágenes con IA que uses. No es un comando reconocido por ningún chatbot — es una plantilla de prompt lista para reutilizar.',
+      field1Default:'unas zapatillas deportivas blancas con detalles dorados',
+      detalleDefault:'mantener el logo lateral visible en todo momento',
+      defaultId:'showcase'
+    },
+    work: {
+      label:'Pensar y trabajar', icon:'var(--c5)', data:WORK_DATA, cats:WORK_CATS,
+      statLabel:'secciones del catálogo',
+      panel1Title:'1 · Tu material', panel1Sub:'Descríbelo una vez; se reutiliza en cualquier ficha que elijas abajo.',
+      field1Label:'Idea, texto, situación o documento con el que trabajas', field1Placeholder:'p. ej. quiero mejorar las ventas de mi tienda online pero no sé por dónde empezar',
+      detalleePlaceholder:'p. ej. presupuesto limitado, equipo de 2 personas, 3 meses de plazo',
+      searchPlaceholder:'Busca por palabra (ej. prioridad, resumen, cliente)…',
+      usageNote:'Pega este texto en tu conversación con Claude (o cualquier otro asistente). No activa ninguna función oculta — es una instrucción completa escrita de antemano.',
+      field1Default:'quiero mejorar las ventas de mi tienda online pero no sé por dónde empezar',
+      detalleDefault:'presupuesto limitado, equipo de 2 personas, 3 meses de plazo',
+      defaultId:'w0'
+    }
+  };
+
   var els = {
+    tabs: document.getElementById('section-tabs'),
     grid: document.getElementById('cmd-grid'),
     pills: document.getElementById('pills'),
     search: document.getElementById('in-search'),
-    sujeto: document.getElementById('in-sujeto'),
+    field1: document.getElementById('in-field1'),
     detalle: document.getElementById('in-detalle'),
     count: document.getElementById('count-line'),
     selTrig: document.getElementById('sel-trig'),
@@ -429,42 +608,83 @@
     promptBox: document.getElementById('prompt-box'),
     copyBtn: document.getElementById('copy-btn'),
     copyHint: document.getElementById('copy-hint'),
-    statTotal: document.getElementById('stat-total')
+    statTotal: document.getElementById('stat-total'),
+    statCats: document.getElementById('stat-cats'),
+    statCatsLabel: document.getElementById('stat-cats-label'),
+    panel1Title: document.getElementById('panel-1-title'),
+    panel1Sub: document.getElementById('panel-1-sub'),
+    field1Label: document.getElementById('field1-label'),
+    usageNote: document.getElementById('usage-note')
   };
 
-  var state = {
-    filter: 'all',
-    query: '',
-    selectedId: 'showcase'
-  };
+  var state = { section:'foto', filter:'all', query:'', selectedId:'showcase' };
 
-  els.statTotal.textContent = DATA.length;
-
-  var pillDefs = [{id:'all',label:'Todos'}].concat(
-    Object.keys(CATS).map(function(k){ return {id:k,label:CATS[k].label,color:CATS[k].color}; })
-  );
-  pillDefs.forEach(function(p){
+  Object.keys(SECTIONS).forEach(function(key){
+    var s = SECTIONS[key];
     var btn = document.createElement('button');
-    btn.type='button'; btn.className='pill'; btn.dataset.filter=p.id;
-    btn.setAttribute('aria-pressed', String(p.id===state.filter));
-    var dotHtml = p.color ? '<span class="dot" style="background:'+p.color+'"></span>' : '';
-    btn.innerHTML = dotHtml + p.label;
-    btn.addEventListener('click', function(){
-      state.filter = p.id;
-      Array.prototype.forEach.call(els.pills.children, function(c){
-        c.setAttribute('aria-pressed', String(c.dataset.filter===p.id));
-      });
-      renderGrid();
-    });
-    els.pills.appendChild(btn);
+    btn.type='button'; btn.className='section-tab'; btn.dataset.section=key;
+    btn.setAttribute('aria-pressed', String(key===state.section));
+    btn.innerHTML =
+      '<span class="st-label"><span class="st-icon" style="background:'+s.icon+'"></span>'+s.label+'</span>'+
+      '<span class="st-sub">'+s.data.length+' comandos</span>';
+    btn.addEventListener('click', function(){ switchSection(key); });
+    els.tabs.appendChild(btn);
   });
+
+  function switchSection(key){
+    state.section = key; state.filter='all'; state.query='';
+    var s = SECTIONS[key];
+    state.selectedId = s.defaultId;
+    els.search.value = '';
+    els.search.placeholder = s.searchPlaceholder;
+    els.statTotal.textContent = s.data.length;
+    els.statCatsLabel.textContent = s.statLabel;
+    els.statCats.textContent = Object.keys(s.cats).length;
+    els.panel1Title.textContent = s.panel1Title;
+    els.panel1Sub.textContent = s.panel1Sub;
+    els.field1Label.textContent = s.field1Label;
+    els.field1.placeholder = s.field1Placeholder;
+    els.field1.value = s.field1Default;
+    els.detalle.placeholder = s.detalleePlaceholder;
+    els.detalle.value = s.detalleDefault;
+    els.usageNote.textContent = s.usageNote;
+    Array.prototype.forEach.call(els.tabs.children, function(b){
+      b.setAttribute('aria-pressed', String(b.dataset.section===key));
+    });
+    buildPills();
+    renderGrid();
+    renderResult();
+  }
+
+  function buildPills(){
+    var s = SECTIONS[state.section];
+    els.pills.innerHTML = '';
+    var defs = [{id:'all',label:'Todas'}].concat(Object.keys(s.cats).map(function(k){
+      return {id:k,label:s.cats[k].label,color:s.cats[k].color};
+    }));
+    defs.forEach(function(p){
+      var btn = document.createElement('button');
+      btn.type='button'; btn.className='pill'; btn.dataset.filter=p.id;
+      btn.setAttribute('aria-pressed', String(p.id===state.filter));
+      var dotHtml = p.color ? '<span class="dot" style="background:'+p.color+'"></span>' : '';
+      btn.innerHTML = dotHtml + p.label;
+      btn.addEventListener('click', function(){
+        state.filter = p.id;
+        Array.prototype.forEach.call(els.pills.children, function(c){
+          c.setAttribute('aria-pressed', String(c.dataset.filter===p.id));
+        });
+        renderGrid();
+      });
+      els.pills.appendChild(btn);
+    });
+  }
 
   els.search.addEventListener('input', function(){
     state.query = els.search.value.trim().toLowerCase().replace(/^\//,'');
     renderGrid();
   });
   document.addEventListener('keydown', function(e){
-    if(e.key==='/' && document.activeElement!==els.search && document.activeElement!==els.sujeto && document.activeElement!==els.detalle){
+    if(e.key==='/' && document.activeElement!==els.search && document.activeElement!==els.field1 && document.activeElement!==els.detalle){
       e.preventDefault(); els.search.focus();
     }
   });
@@ -479,13 +699,14 @@
   }
 
   function renderGrid(){
-    var list = DATA.filter(matches);
+    var s = SECTIONS[state.section];
+    var list = s.data.filter(matches);
     els.count.textContent = list.length + (list.length===1 ? ' comando' : ' comandos');
     els.grid.innerHTML='';
     if(list.length===0){
       var empty = document.createElement('div');
       empty.className='empty-state';
-      empty.textContent = 'Ningún comando coincide. Prueba con otra palabra o rollo.';
+      empty.textContent = 'Ningún comando coincide. Prueba con otra palabra o categoría.';
       els.grid.appendChild(empty);
       return;
     }
@@ -497,7 +718,7 @@
         '<span class="trig">'+cmd.trig+'</span>'+
         '<span class="title">'+cmd.title+'</span>'+
         '<span class="desc">'+cmd.desc+'</span>'+
-        '<span class="tag"><span class="dot" style="background:'+CATS[cmd.cat].color+'"></span>'+CATS[cmd.cat].label+'</span>';
+        '<span class="tag"><span class="dot" style="background:'+s.cats[cmd.cat].color+'"></span>'+s.cats[cmd.cat].label+'</span>';
       card.addEventListener('click', function(){
         state.selectedId = cmd.id;
         Array.prototype.forEach.call(els.grid.children, function(c){ c.setAttribute && c.setAttribute('aria-pressed','false'); });
@@ -512,18 +733,21 @@
   }
 
   function buildPrompt(cmd){
-    var sujeto = els.sujeto.value.trim() || '[tu producto o foto]';
+    var field1 = els.field1.value.trim();
     var detalle = els.detalle.value.trim();
-    var body = cmd.template.split('{sujeto}').join(sujeto);
-    var extra = '';
-    if(detalle){
-      extra = ' ' + detalle + (/[.!?]$/.test(detalle) ? '' : '.');
+    var extra = detalle ? ' ' + detalle + (/[.!?]$/.test(detalle) ? '' : '.') : '';
+    if(cmd.kind==='foto'){
+      var sujeto = field1 || '[tu producto o foto]';
+      var body = cmd.template.split('{sujeto}').join(sujeto);
+      return body + extra + ' Resultado realista, alta resolución y calidad fotográfica profesional.';
     }
-    return body + extra + ' Resultado realista, alta resolución y calidad fotográfica profesional.';
+    var contenido = field1 || '[describe aquí tu idea, texto o situación]';
+    return cmd.desc + ' Esto es con lo que estoy trabajando: ' + contenido + '.' + extra;
   }
 
   function renderResult(){
-    var cmd = DATA.find(function(c){ return c.id===state.selectedId; }) || DATA[0];
+    var s = SECTIONS[state.section];
+    var cmd = s.data.find(function(c){ return c.id===state.selectedId; }) || s.data[0];
     els.selTrig.textContent = cmd.trig;
     els.selTitle.textContent = cmd.title;
     els.promptBox.textContent = buildPrompt(cmd);
@@ -532,9 +756,7 @@
     els.copyBtn.textContent='Copiar prompt';
   }
 
-  [els.sujeto, els.detalle].forEach(function(el){
-    el.addEventListener('input', renderResult);
-  });
+  [els.field1, els.detalle].forEach(function(el){ el.addEventListener('input', renderResult); });
 
   els.copyBtn.addEventListener('click', function(){
     var text = els.promptBox.textContent;
@@ -564,9 +786,10 @@
     }
   });
 
-  els.sujeto.value = 'unas zapatillas deportivas blancas con detalles dorados';
-  els.detalle.value = 'mantener el logo lateral visible en todo momento';
+  els.field1.value = SECTIONS.foto.field1Default;
+  els.detalle.value = SECTIONS.foto.detalleDefault;
 
+  buildPills();
   renderGrid();
   renderResult();
 })();
